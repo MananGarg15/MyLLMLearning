@@ -24,7 +24,9 @@ Constraint: Keep the total length concise (around 800-1000 words).
     """
     contents = getBrochureContent(url)[:5000]
     brochure_user_prompt += contents
+    
 
-    response = Llms.callGPT_OSS(brochure_user_prompt,system_prompt=brochure_system_prompt)
+    print(f'Creating brochure for {company_name}...')
+    response = Llms.callGPT_OSS(brochure_user_prompt,system_prompt=brochure_system_prompt,markdown=True)
 
     return response

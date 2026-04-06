@@ -14,4 +14,6 @@ def getBrochureContent(url):
         brochureContent += link['url'] + '\n\n' 
         brochureContent += getWebsiteContent(link['url']) + '\n\n'
 
+    print('Generated Brochure Content.')
+
     return brochureContent
