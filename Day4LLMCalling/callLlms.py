@@ -13,7 +13,7 @@ class Llms:
     gemini = OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/",api_key=os.getenv('GOOGLE_API_KEY'))
     qwen = OpenAI(base_url="https://openrouter.ai/api/v1",api_key=os.getenv('OPENROUTER_API_KEY'))
 
-    def callLlama(message,new=False,system_prompt = '', response_format='text', displayMarkdown=False):
+    def callLlama(message,new=False,system_prompt = '', response_format='text', markdown=False):
 
         if isinstance(message,str):
             messages = mSeries.LlamaMessageSeries(message=[{'role':'user','content':message}],new=new)
@@ -24,14 +24,16 @@ class Llms:
             mSeries.LlamaMessages[0] = system_message
 
         response = Llms.llama.chat.completions.create(model='llama3.2',messages=messages, response_format={"type":response_format}) 
-        newMessage = [{'role':'assistant','content':response.choices[0].message.content}]
+        result = response.choices[0].message.content
+
+        newMessage = [{'role':'assistant','content':result}]
         mSeries.LlamaMessageSeries(newMessage)
         
-        if displayMarkdown: 
-            display(Markdown(response.choices[0].message.content))
-        return Markdown(response.choices[0].message.content)
+        if markdown: 
+            return Markdown(result)
+        return result
 
-    def callGemini(message,new=False,system_prompt = '', response_format='text', displayMarkdown=False):
+    def callGemini(message,new=False,system_prompt = '', response_format='text', markdown=False):
 
         if isinstance(message,str):
             messages = mSeries.GeminiMessageSeries(message=[{'role':'user','content':message}],new=new)
@@ -42,15 +44,16 @@ class Llms:
             mSeries.geminiMessages[0] = system_message
 
         response = Llms.gemini.chat.completions.create(model='gemini-3-flash-preview',messages=messages, response_format={"type":response_format}) 
-        newMessage = [{'role':'assistant','content':response.choices[0].message.content}]
+        result = response.choices[0].message.content
+
+        newMessage = [{'role':'assistant','content':result}]
         mSeries.GeminiMessageSeries(newMessage)
 
+        if markdown: 
+            return Markdown(response.choices[0].message.content)
+        return result
 
-        if displayMarkdown: 
-            display(Markdown(response.choices[0].message.content))
-        return Markdown(response.choices[0].message.content)
-
-    def callQwen(message,new=False,system_prompt = '', response_format='text', displayMarkdown=False):
+    def callQwen(message,new=False,system_prompt = '', response_format='text', markdown=False):
 
         if isinstance(message,str):
             messages = mSeries.QwenMessageSeries(message=[{'role':'user','content':message}],new=new)
@@ -61,14 +64,16 @@ class Llms:
             mSeries.qwenMessages[0] = system_message
 
         response = Llms.qwen.chat.completions.create(model='qwen/qwen3.6-plus:free',messages=messages, response_format={"type":response_format}) 
-        newMessage = [{'role':'assistant','content':response.choices[0].message.content}]
+        result = response.choices[0].message.content
+
+        newMessage = [{'role':'assistant','content':result}]
         mSeries.QwenMessageSeries(newMessage)
 
-        if displayMarkdown: 
-            display(Markdown(response.choices[0].message.content))
-        return Markdown(response.choices[0].message.content)
+        if markdown: 
+            return Markdown(response.choices[0].message.content)
+        return result
 
-    def callGPT_OSS(message,new=False,system_prompt = '', response_format='text', displayMarkdown=False):
+    def callGPT_OSS(message,new=False,system_prompt = '', response_format='text', markdown=False):
 
         if isinstance(message,str):
             messages = mSeries.GPT_OSSMessageSeries(message=[{'role':'user','content':message}],new=new)
@@ -79,14 +84,15 @@ class Llms:
             mSeries.gpt_ossMessages[0] = system_message
 
         response = Llms.gpt_oss.chat.completions.create(model='gpt-oss',messages=messages, response_format={"type":response_format}) 
-        newMessage = [{'role':'assistant','content':response.choices[0].message.content}]
+        result = response.choices[0].message.content
+
+        newMessage = [{'role':'assistant','content':result}]
         mSeries.GPT_OSSMessageSeries(newMessage)
 
-        if displayMarkdown: 
-            display(Markdown(response.choices[0].message.content))
-        return Markdown(response.choices[0].message.content)
-
-   
+        if markdown: 
+            return Markdown(response.choices[0].message.content)
+        return result
+        
 
 if __name__=='__main__':
 
