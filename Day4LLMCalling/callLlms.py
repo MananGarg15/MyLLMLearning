@@ -14,24 +14,24 @@ class Llms:
 
 
 
-    def callOpenRouterModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model= 'qwen/qwen3.6-plus:free'):
+    def callOpenRouterModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model= 'openai/gpt-oss-120b:free'):
 
         if isinstance(message,str):
-            messages = mSeries.openRouterModelSeries(message=[{'role':'user','content':message}],model=model, new=new)
+            messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],model=model, new=new)
         else:
-            messages = mSeries.openRouterModelSeries(message=message,model=model,new=new)
+            messages = mSeries.addToPromptList(message=message,model=model,new=new)
         if system_prompt:
             system_message = {'role':'system','content':system_prompt}
-            if mSeries.openRouterModelMessages.get(model):
-                mSeries.openRouterModelMessages[model][0] = system_message
+            if mSeries.promptList.get(model):
+                mSeries.promptList[model][0] = system_message
             else:
-                mSeries.openRouterModelMessages[model] = [system_message]
+                mSeries.promptList[model] = [system_message]
 
         response = Llms.openRouter.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}) 
         result = response.choices[0].message.content
 
         newMessage = [{'role':'assistant','content':result}]
-        mSeries.openRouterModelSeries(newMessage,model=model)
+        mSeries.addToPromptList(newMessage,model=model)
         
         if markdown: 
             return Markdown(result)
@@ -41,42 +41,43 @@ class Llms:
     def callOllama(message,new=False,system_prompt = '', response_format='text', markdown=False,  model= 'gemma4:e4b'):
 
         if isinstance(message,str):
-            messages = mSeries.OllamaMessageSeries(message=[{'role':'user','content':message}],new=new, model=model)
+            messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],new=new, model=model)
         else:
-            messages = mSeries.OllamaMessageSeries(message=message,new=new,model=model)
+            messages = mSeries.addToPromptList(message=message,new=new,model=model)
         if system_prompt:
             system_message = {'role':'system','content':system_prompt}
-            if mSeries.ollamaMessages.get(model):
-                mSeries.ollamaMessages[model][0] = system_message
+            if mSeries.promptList.get(model):
+                mSeries.promptList[model][0] = system_message
             else:
-                mSeries.ollamaMessages[model] = [system_message]
+                mSeries.promptList[model] = [system_message]
         response = Llms.ollama.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}) 
         result = response.choices[0].message.content
 
         newMessage = [{'role':'assistant','content':result}]
-        mSeries.OllamaMessageSeries(newMessage,model=model)
+        mSeries.addToPromptList(newMessage,model=model)
         
-        print(mSeries.ollamaMessages)
-
         if markdown: 
             return Markdown(result)
         return result
 
-    def callGemini(message,new=False,system_prompt = '', response_format='text', markdown=False):
+    def callGemini(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gemini-3-flash-preview'):
 
         if isinstance(message,str):
-            messages = mSeries.GeminiMessageSeries(message=[{'role':'user','content':message}],new=new)
+            messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],new=new, model = model)
         else:
-            messages = mSeries.GeminiMessageSeries(message=message,new=new)
+            messages = mSeries.addToPromptList(message=message,new=new, model=model)
         if system_prompt:
             system_message = {'role':'system','content':system_prompt}
-            mSeries.geminiMessages[0] = system_message
+            if mSeries.promptList.get(model):
+                mSeries.promptList[model][0] = system_message
+            else:
+                mSeries.promptList[model] = [system_message]
 
-        response = Llms.gemini.chat.completions.create(model='gemini-3-flash-preview',messages=messages, response_format={"type":response_format}) 
+        response = Llms.gemini.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}) 
         result = response.choices[0].message.content
 
         newMessage = [{'role':'assistant','content':result}]
-        mSeries.GeminiMessageSeries(newMessage)
+        mSeries.addToPromptList(newMessage,model=model)
 
         if markdown: 
             return Markdown(response.choices[0].message.content)
