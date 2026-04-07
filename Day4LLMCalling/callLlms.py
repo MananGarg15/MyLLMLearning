@@ -37,7 +37,6 @@ class Llms:
             return Markdown(result)
         return result
 
-
     def callOllama(message,new=False,system_prompt = '', response_format='text', markdown=False,  model= 'gemma4:e4b'):
 
         if isinstance(message,str):
@@ -50,6 +49,7 @@ class Llms:
                 mSeries.promptList[model][0] = system_message
             else:
                 mSeries.promptList[model] = [system_message]
+                
         response = Llms.ollama.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}) 
         result = response.choices[0].message.content
 

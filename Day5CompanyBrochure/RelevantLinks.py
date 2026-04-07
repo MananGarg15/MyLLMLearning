@@ -23,7 +23,7 @@ Here is the list of links in {url} -
 {links}    
     """
     print(f'selecting relevant links from {url}')
-    response = Llms.callOllama(system_prompt=links_system_prompt,message=links_user_prompt,new=True, response_format = "json_object")
+    response = Llms.callOpenRouterModel(system_prompt=links_system_prompt,message=links_user_prompt,new=True, response_format = "json_object")
     result =  json.loads(response)
     print(f'Found {len(result['links'])} relevant links')
     return result

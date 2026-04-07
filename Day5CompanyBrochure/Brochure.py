@@ -27,7 +27,7 @@ Constraint: Keep the total length concise (around 800-1000 words).
     
 
     print(f'Creating brochure for {company_name}...')
-    response = Llms.callOllama(brochure_user_prompt,system_prompt=brochure_system_prompt,markdown=True)
+    response = Llms.callOpenRouterModel(brochure_user_prompt,system_prompt=brochure_system_prompt,markdown=True)
     print(f'Brochure generated!')
 
     return response
