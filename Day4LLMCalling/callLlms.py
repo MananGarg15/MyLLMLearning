@@ -13,6 +13,30 @@ class Llms:
     gemini = OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/",api_key=os.getenv('GOOGLE_API_KEY'))
     qwen = OpenAI(base_url="https://openrouter.ai/api/v1",api_key=os.getenv('OPENROUTER_API_KEY'))
 
+    openRouter = OpenAI(base_url="https://openrouter.ai/api/v1",api_key=os.getenv('OPENROUTER_API_KEY'))
+
+
+    def callOpenRouterModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model= 'qwen/qwen3.6-plus:free'):
+
+        if isinstance(message,str):
+            messages = mSeries.openRouterModelSeries(message=[{'role':'user','content':message}],model=model, new=new)
+        else:
+            messages = mSeries.openRouterModelSeries(message=message,model=model,new=new)
+        if system_prompt:
+            system_message = {'role':'system','content':system_prompt}
+            mSeries.openRouterModelMessages[model][0] = system_message
+
+        response = Llms.openRouter.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}) 
+        result = response.choices[0].message.content
+
+        newMessage = [{'role':'assistant','content':result}]
+        mSeries.openRouterModelSeries(newMessage,model=model)
+        
+        if markdown: 
+            return Markdown(result)
+        return result
+
+
     def callLlama(message,new=False,system_prompt = '', response_format='text', markdown=False):
 
         if isinstance(message,str):
