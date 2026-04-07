@@ -3,9 +3,8 @@ class mSeries:
     geminiMessages = [{'role':'system','content':''}]
     qwenMessages = [{'role':'system','content':''}]
     gpt_ossMessages = [{'role':'system','content':''}]
-    openRouterModelMessages = {
-                                'model':  [{'role':'system','content':''}]
-                                }
+    openRouterModelMessages = {}
+    ollamaMessages = {}
 
     @staticmethod
     def openRouterModelSeries(message,model,new = False):
@@ -17,6 +16,18 @@ class mSeries:
         else:
             mSeries.openRouterModelMessages[model].extend(message)
             return mSeries.openRouterModelMessages[model]
+
+    @staticmethod
+    def OllamaMessageSeries(message,model,new = False):
+        if(new or not mSeries.ollamaMessages.get(model) ):
+            initial_message = [{'role':'system','content':''}]
+            
+            mSeries.ollamaMessages[model] = initial_message + message
+            return mSeries.ollamaMessages[model]
+        else:
+            mSeries.ollamaMessages[model].extend(message)
+            return mSeries.ollamaMessages[model]
+
 
     @staticmethod
     def LlamaMessageSeries(message,new = False):

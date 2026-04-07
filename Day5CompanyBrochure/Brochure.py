@@ -27,7 +27,7 @@ Constraint: Keep the total length concise (around 800-1000 words).
     
 
     print(f'Creating brochure for {company_name}...')
-    response = Llms.callLlama(brochure_user_prompt,system_prompt=brochure_system_prompt,markdown=True)
+    response = Llms.callGemini(brochure_user_prompt,system_prompt=brochure_system_prompt,markdown=True)
     print(f'Brochure generated!')
 
     return response

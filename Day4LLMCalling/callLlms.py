@@ -14,6 +14,8 @@ class Llms:
     qwen = OpenAI(base_url="https://openrouter.ai/api/v1",api_key=os.getenv('OPENROUTER_API_KEY'))
 
     openRouter = OpenAI(base_url="https://openrouter.ai/api/v1",api_key=os.getenv('OPENROUTER_API_KEY'))
+    ollama = OpenAI(base_url='http://localhost:11434/v1',api_key='')
+
 
 
     def callOpenRouterModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model= 'qwen/qwen3.6-plus:free'):
@@ -40,22 +42,26 @@ class Llms:
         return result
 
 
-    def callLlama(message,new=False,system_prompt = '', response_format='text', markdown=False):
+    def callOllama(message,new=False,system_prompt = '', response_format='text', markdown=False,  model= 'gemma4:e4b'):
 
         if isinstance(message,str):
-            messages = mSeries.LlamaMessageSeries(message=[{'role':'user','content':message}],new=new)
+            messages = mSeries.OllamaMessageSeries(message=[{'role':'user','content':message}],new=new, model=model)
         else:
-            messages = mSeries.LlamaMessageSeries(message=message,new=new)
+            messages = mSeries.OllamaMessageSeries(message=message,new=new,model=model)
         if system_prompt:
             system_message = {'role':'system','content':system_prompt}
-            mSeries.LlamaMessages[0] = system_message
-
-        response = Llms.llama.chat.completions.create(model='llama3.2',messages=messages, response_format={"type":response_format}) 
+            if mSeries.ollamaMessages.get(model):
+                mSeries.ollamaMessages[model][0] = system_message
+            else:
+                mSeries.ollamaMessages[model] = [system_message]
+        response = Llms.ollama.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}) 
         result = response.choices[0].message.content
 
         newMessage = [{'role':'assistant','content':result}]
-        mSeries.LlamaMessageSeries(newMessage)
+        mSeries.OllamaMessageSeries(newMessage,model=model)
         
+        print(mSeries.ollamaMessages)
+
         if markdown: 
             return Markdown(result)
         return result
@@ -124,3 +130,4 @@ class Llms:
 if __name__=='__main__':
 
     print('This is not supposed to run')
+    
