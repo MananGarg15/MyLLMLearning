@@ -22,8 +22,8 @@ Here is the list of links in {url} -
 
 {links}    
     """
-    print(f'selecting relevant links from {url} by calling gemini')
-    response = Llms.callGemini(system_prompt=links_system_prompt,message=links_user_prompt,new=True, response_format = "json_object")
+    print(f'selecting relevant links from {url} by calling Llama')
+    response = Llms.callLlama(system_prompt=links_system_prompt,message=links_user_prompt,new=True, response_format = "json_object")
     result =  json.loads(response)
     print(f'Found {len(result['links'])} relevant links')
     return result
