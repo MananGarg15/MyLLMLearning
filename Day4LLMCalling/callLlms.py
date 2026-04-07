@@ -24,7 +24,12 @@ class Llms:
             messages = mSeries.openRouterModelSeries(message=message,model=model,new=new)
         if system_prompt:
             system_message = {'role':'system','content':system_prompt}
-            mSeries.openRouterModelMessages[model][0] = system_message
+            print(mSeries.openRouterModelMessages)
+            if mSeries.openRouterModelMessages.get(model):
+                mSeries.openRouterModelMessages[model][0] = system_message
+            else:
+                mSeries.openRouterModelMessages[model] = [system_message]
+            print(mSeries.openRouterModelMessages[model])
 
         response = Llms.openRouter.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}) 
         result = response.choices[0].message.content

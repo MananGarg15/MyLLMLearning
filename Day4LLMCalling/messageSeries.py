@@ -9,14 +9,14 @@ class mSeries:
 
     @staticmethod
     def openRouterModelSeries(message,model,new = False):
-        if(new):
+        if(new or not mSeries.openRouterModelMessages.get(model) ):
             initial_message = [{'role':'system','content':''}]
             
             mSeries.openRouterModelMessages[model] = initial_message + message
             return mSeries.openRouterModelMessages[model]
         else:
-            mSeries.LlamaMessages.extend(message)
-            return mSeries.LlamaMessages
+            mSeries.openRouterModelMessages[model].extend(message)
+            return mSeries.openRouterModelMessages[model]
 
     @staticmethod
     def LlamaMessageSeries(message,new = False):
