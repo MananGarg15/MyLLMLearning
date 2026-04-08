@@ -2,9 +2,9 @@ from Day5CompanyBrochure.RelevantLinks import getRelevantLinks
 from Day5CompanyBrochure.WebsiteContent import getWebsiteContent
 
 
-def getBrochureContent(url):
+def getBrochureContent(url, source = 'ollama'):
     content = getWebsiteContent(url)
-    links = getRelevantLinks(url)
+    links = getRelevantLinks(url, source = source)
 
     brochureContent = f"""
     \n\n{content}\n\n

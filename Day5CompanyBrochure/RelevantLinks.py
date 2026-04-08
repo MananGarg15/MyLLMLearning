@@ -2,7 +2,7 @@ from Utils.Scraper import get_all_links
 from Day4LLMCalling.callLlms import Llms
 import json
 
-def getRelevantLinks(url):
+def getRelevantLinks(url, source = 'ollama'):
     links_system_prompt = """
 You will be provided with a set of links from a website. You have to correctly identify the links most relevant to be included in the brochure
  of the company and provide them in as a JSON object, specifying what they are about. Do not include terms of service, email links, but include relavant info
@@ -13,8 +13,9 @@ Here is an example -
                 {"type":"home page","url":"https://anotherurl/goes/here/home"}
     ]
 }
+Return ONLY a valid JSON object. Do not include any preamble or postscript. Ensure all strings are double-quoted and any quotes inside strings are escaped with a backslash (e.g., \")   
 
-    """
+"""
     links = get_all_links(url)
 
     links_user_prompt = f"""
@@ -22,8 +23,8 @@ Here is the list of links in {url} -
 
 {links}    
     """
-    print(f'selecting relevant links from {url}')
-    response = Llms.callOpenRouterModel(system_prompt=links_system_prompt,message=links_user_prompt,new=True, response_format = "json_object")
+    print(f'selecting relevant links from {url} using {source}')
+    response = Llms.callModel(system_prompt=links_system_prompt,message=links_user_prompt,new=True, response_format = "json_object")
     result =  json.loads(response)
     print(f'Found {len(result['links'])} relevant links')
     return result
