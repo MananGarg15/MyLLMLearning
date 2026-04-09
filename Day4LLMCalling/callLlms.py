@@ -1,4 +1,3 @@
-from ast import Dict
 from Day4LLMCalling.messageSeries import mSeries
 from openai import OpenAI
 from IPython.display import Markdown,display, update_display
@@ -14,8 +13,8 @@ class Llms:
     ollama = OpenAI(base_url='http://localhost:11434/v1',api_key='')
 
              
-    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gemma4:e4b', stream=False, source = 'ollama'):
-        if isinstance(message,Dict):
+    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama'):
+        if isinstance(message,dict):
             messages = mSeries.addToPromptList(message=message,new=new,model=model)
         else:
             messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],new=new, model=model)
@@ -32,12 +31,12 @@ class Llms:
             case 'ollama':        
                 response = Llms.ollama.chat.completions.create(model=model,messages=messages, response_format={"type":response_format},stream=stream) 
             case 'gemini':
-                if model =='gemma4:e4b':
+                if model =='gpt-oss:20b':
                     model='gemini-3-flash-preview'
                 response = Llms.gemini.chat.completions.create(model=model,messages=messages, response_format={"type":response_format},stream=stream) 
             case 'openRouter':
-                if model =='gemma4:e4b':
-                    model='gemini-3-flash-preview'            
+                if model =='gpt-oss:20b':
+                    model='nvidia/nemotron-3-super-120b-a12b:free'            
                 response = Llms.openRouter.chat.completions.create(model=model,messages=messages, response_format={"type":response_format},stream=stream) 
             case _:
                 print('please select a valid source')
