@@ -36,7 +36,7 @@ class Llms:
                 response = Llms.gemini.chat.completions.create(model=model,messages=messages, response_format={"type":response_format},stream=stream) 
             case 'openRouter':
                 if model =='gpt-oss:20b':
-                    model='nvidia/nemotron-3-super-120b-a12b:free'            
+                    model='openrouter/free'            
                 response = Llms.openRouter.chat.completions.create(model=model,messages=messages, response_format={"type":response_format},stream=stream) 
             case _:
                 print('please select a valid source')
@@ -62,6 +62,42 @@ class Llms:
                 return Markdown(result)
             return result    
 
+    def callModelGenerator(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=True, source = 'ollama'):
+        if isinstance(message,dict):
+            messages = mSeries.addToPromptList(message=message,new=new,model=model)
+        else:
+            messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],new=new, model=model)
+        if system_prompt:
+            system_message = {'role':'system','content':system_prompt}
+            if mSeries.promptList.get(model):
+                mSeries.promptList[model][0] = system_message
+            else:
+                mSeries.promptList[model] = [system_message]
+
+        response = ''
+
+        match source:
+            case 'ollama':        
+                response = Llms.ollama.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream) 
+            case 'gemini':
+                if model =='gpt-oss:20b':
+                    model='gemini-3-flash-preview'
+                response = Llms.gemini.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream) 
+            case 'openRouter':
+                if model =='gpt-oss:20b':
+                    model='openrouter/free'            
+                response = Llms.openRouter.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream) 
+            case _:
+                print('please select a valid source')
+                return
+
+        rsp = ''
+        for chunk in response:
+            rsp+= chunk.choices[0].delta.content  or ''
+            yield rsp
+
+        newMessage = [{'role':'assistant','content':rsp}]
+        mSeries.addToPromptList(newMessage,model=model)
 
 if __name__=='__main__':
 
