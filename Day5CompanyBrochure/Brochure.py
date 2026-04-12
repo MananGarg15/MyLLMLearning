@@ -15,7 +15,7 @@ Structure: Use clear sections for "Company Overview," "Products & Services," "In
 
 Formatting: Use Markdown with bold headers and bullet points. Do not use code blocks.
 
-Constraint: Keep the total length concise (around 800-1000 words).
+Constraint: Keep the total length concise (around 800-1000 words)  .
     """
 
     brochure_user_prompt = f"""
