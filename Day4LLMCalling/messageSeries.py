@@ -1,11 +1,13 @@
 class mSeries:
 
-    promptList = [{}]
+    promptList = {}
 
     @staticmethod
     def addToPromptList(message,model,new = False, chat_no=0):
-        if chat_no>= len(mSeries.promptList) :
-            mSeries.promptList.extend([{}])
+            
+        if(new or not mSeries.promptList.get(chat_no) ):
+                mSeries.promptList[chat_no] = {}
+
 
         if(new or not mSeries.promptList[chat_no].get(model) ):
             initial_message = [{'role':'system','content':''}]
