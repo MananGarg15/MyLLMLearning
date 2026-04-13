@@ -63,18 +63,6 @@ class Llms:
             return result    
 
     def callModelGenerator(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=True, source = 'ollama'):
-        if isinstance(message,dict):
-            messages = mSeries.addToPromptList(message=message,new=new,model=model)
-        else:
-            messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],new=new, model=model)
-        if system_prompt:
-            system_message = {'role':'system','content':system_prompt}
-            if mSeries.promptList.get(model):
-                mSeries.promptList[model][0] = system_message
-            else:
-                mSeries.promptList[model] = [system_message]
-
-        response = ''
 
         match source:
             case 'ollama':        
@@ -90,6 +78,21 @@ class Llms:
             case _:
                 print('please select a valid source')
                 return
+
+        if isinstance(message,dict):
+            messages = mSeries.addToPromptList(message=message,new=new,model=model)
+        else:
+            messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],new=new, model=model)
+        if system_prompt:
+            system_message = {'role':'system','content':system_prompt}
+            if mSeries.promptList.get(model):
+                mSeries.promptList[model][0] = system_message
+            else:
+                mSeries.promptList[model] = [system_message]
+
+        response = ''
+
+
 
         rsp = ''
         for chunk in response:
