@@ -13,7 +13,24 @@ class Llms:
     ollama = OpenAI(base_url='http://localhost:11434/v1',api_key='')
 
              
-    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama'):
+    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama', temperature=1):
+
+        match source:
+            case 'ollama':        
+                source = Llms.ollama
+            case 'gemini':
+                source = Llms.gemini
+                if model =='gpt-oss:20b':
+                    model='gemini-3-flash-preview'
+            case 'openRouter':
+                source = Llms.openRouter
+                if model =='gpt-oss:20b':
+                    model='openrouter/free'            
+            case _:
+                print('please select a valid source')
+                return
+
+
         if isinstance(message,dict):
             messages = mSeries.addToPromptList(message=message,new=new,model=model)
         else:
@@ -25,22 +42,9 @@ class Llms:
             else:
                 mSeries.promptList[model] = [system_message]
 
-        response = ''
 
-        match source:
-            case 'ollama':        
-                response = Llms.ollama.chat.completions.create(model=model,messages=messages, response_format={"type":response_format},stream=stream) 
-            case 'gemini':
-                if model =='gpt-oss:20b':
-                    model='gemini-3-flash-preview'
-                response = Llms.gemini.chat.completions.create(model=model,messages=messages, response_format={"type":response_format},stream=stream) 
-            case 'openRouter':
-                if model =='gpt-oss:20b':
-                    model='openrouter/free'            
-                response = Llms.openRouter.chat.completions.create(model=model,messages=messages, response_format={"type":response_format},stream=stream) 
-            case _:
-                print('please select a valid source')
-                return
+        response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature) 
+
 
         if stream:
             display_handle = display(Markdown(''), display_id=True)
@@ -62,19 +66,19 @@ class Llms:
                 return Markdown(result)
             return result    
 
-    def callModelGenerator(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=True, source = 'ollama'):
+    def callModelGenerator(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=True, source = 'ollama', temperature=1):
 
         match source:
             case 'ollama':        
-                response = Llms.ollama.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream) 
+                source = Llms.ollama
             case 'gemini':
+                source = Llms.gemini
                 if model =='gpt-oss:20b':
                     model='gemini-3-flash-preview'
-                response = Llms.gemini.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream) 
             case 'openRouter':
+                source = Llms.openRouter
                 if model =='gpt-oss:20b':
                     model='openrouter/free'            
-                response = Llms.openRouter.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream) 
             case _:
                 print('please select a valid source')
                 return
@@ -90,9 +94,7 @@ class Llms:
             else:
                 mSeries.promptList[model] = [system_message]
 
-        response = ''
-
-
+        response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature) 
 
         rsp = ''
         for chunk in response:
