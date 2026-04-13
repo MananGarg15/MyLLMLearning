@@ -13,7 +13,7 @@ class Llms:
     ollama = OpenAI(base_url='http://localhost:11434/v1',api_key='')
 
              
-    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama', temperature=1):
+    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama', temperature=1, chat_no=0):
 
         match source:
             case 'ollama':        
@@ -32,15 +32,15 @@ class Llms:
 
 
         if isinstance(message,dict):
-            messages = mSeries.addToPromptList(message=message,new=new,model=model)
+            messages = mSeries.addToPromptList(message=message,new=new,model=model,chat_no=chat_no)
         else:
-            messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],new=new, model=model)
+            messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],new=new, model=model, chat_no=chat_no)
         if system_prompt:
             system_message = {'role':'system','content':system_prompt}
-            if mSeries.promptList.get(model):
-                mSeries.promptList[model][0] = system_message
+            if mSeries.promptList[chat_no].get(model):
+                mSeries.promptList[chat_no][model][0] = system_message
             else:
-                mSeries.promptList[model] = [system_message]
+                mSeries.promptList[chat_no][model] = [system_message]
 
 
         response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature) 
@@ -54,19 +54,19 @@ class Llms:
                 update_display(Markdown(rsp),display_id=display_handle.display_id)
 
             newMessage = [{'role':'assistant','content':rsp}]
-            mSeries.addToPromptList(newMessage,model=model)
+            mSeries.addToPromptList(newMessage,model=model,chat_no=chat_no)
             return rsp
         else:
             result = response.choices[0].message.content
 
             newMessage = [{'role':'assistant','content':result}]
-            mSeries.addToPromptList(newMessage,model=model)
+            mSeries.addToPromptList(newMessage,model=model,chat_no=chat_no)
             
             if markdown: 
                 return Markdown(result)
             return result    
 
-    def callModelGenerator(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=True, source = 'ollama', temperature=1):
+    def callModelGenerator(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=True, source = 'ollama', temperature=1, chat_no=0):
 
         match source:
             case 'ollama':        
@@ -84,15 +84,15 @@ class Llms:
                 return
 
         if isinstance(message,dict):
-            messages = mSeries.addToPromptList(message=message,new=new,model=model)
+            messages = mSeries.addToPromptList(message=message,new=new,model=model, chat_no=chat_no)
         else:
-            messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],new=new, model=model)
+            messages = mSeries.addToPromptList(message=[{'role':'user','content':message}],new=new, model=model, chat_no=chat_no)
         if system_prompt:
             system_message = {'role':'system','content':system_prompt}
-            if mSeries.promptList.get(model):
-                mSeries.promptList[model][0] = system_message
+            if mSeries.promptList[chat_no].get(model):
+                mSeries.promptList[chat_no][model][0] = system_message
             else:
-                mSeries.promptList[model] = [system_message]
+                mSeries.promptList[chat_no][model] = [system_message]
 
         response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature) 
 
@@ -102,7 +102,7 @@ class Llms:
             yield rsp
 
         newMessage = [{'role':'assistant','content':rsp}]
-        mSeries.addToPromptList(newMessage,model=model)
+        mSeries.addToPromptList(newMessage,model=model, chat_no=chat_no)
 
 if __name__=='__main__':
 
