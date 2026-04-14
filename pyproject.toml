@@ -17,5 +17,6 @@ dependencies = [
     "markdown>=3.10.2",
     "openai>=2.30.0",
     "pandas>=3.0.2",
+    "pypdf2>=3.0.1",
     "requests>=2.33.1",
 ]
