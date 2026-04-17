@@ -1,11 +1,19 @@
 import gradio as gr
 import PyPDF2
 from Day4LLMCalling.callLlms import Llms, mSeries
+import copy
 
-def wrapLlm(message,file_content,source,model,temperature,chat_no):
+def wrapLlm(message,file_content,source,model,temperature,chat_no,):
     if file_content:
         message += f'File content: {file_content}'
-    yield from Llms.callModelGenerator(message,source=source, model=model, temperature=temperature, chat_no=chat_no)
+    
+    history = copy.deepcopy(mSeries.promptList.get(chat_no,{}).get(model,[]).copy())
+    history.extend([{'role':'user','content':message},{'role':'assistant','content':''}])
+    print(history)
+    # history[chat_no][model][-1]
+    for chunk in Llms.callModelGenerator(message,source=source, model=model, temperature=temperature, chat_no=chat_no):
+        history[-1]['content']=chunk
+        yield history
 
 def update_chatbox(model,chat_no):
     return mSeries.promptList.get(chat_no,{}).get(model,[])[:-1]
@@ -88,11 +96,11 @@ def startApp():
                 submit_btn.click(
                     wrapLlm,
                     inputs=[user_input, file_content,source,model_name,temperature,chat_no], 
-                    outputs=[response_box]
-                ).then(
-                    fn=update_chatbox, 
-                    inputs=[model_name,chat_no], 
-                    outputs=chat_history
+                    outputs=[chat_history]
+                # ).then(
+                #     fn=update_chatbox, 
+                #     inputs=[model_name,chat_no], 
+                #     outputs=chat_history
                 ).then(
                     fn = lambda rst='':rst, 
                     outputs=[user_input] )
@@ -100,11 +108,11 @@ def startApp():
                 user_input.submit(
                     wrapLlm,
                     inputs=[user_input, file_content,source,model_name,temperature,chat_no], 
-                    outputs=[response_box]
-                ).then(
-                    fn=update_chatbox, 
-                    inputs=[model_name,chat_no], 
-                    outputs=chat_history
+                    outputs=[chat_history]
+                # ).then(
+                #     fn=update_chatbox, 
+                #     inputs=[model_name,chat_no], 
+                #     outputs=chat_history
                 ).then(
                     fn = lambda rst='':rst,
                     outputs=[user_input])
