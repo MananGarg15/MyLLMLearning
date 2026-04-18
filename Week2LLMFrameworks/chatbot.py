@@ -16,7 +16,7 @@ def wrapLlm(message,file_content,source,model,temperature,chat_no,):
         yield history
 
 def update_chatbox(model,chat_no):
-    return mSeries.promptList.get(chat_no,{}).get(model,[])[:-1]
+    return mSeries.promptList.get(chat_no,{}).get(model,[])
 
 def create_new_chat(chat_list):
     chat_list.append(f'Chat{len(chat_list)+1}')
@@ -132,13 +132,22 @@ def startApp():
                     temperature_select = gr.Slider(
                         0,2,value=0,
                         step=0.1,
-                        label='temp_slider') 
-
-                    model_name_input = gr.Textbox(
-                        placeholder='Enter model name',
-                        value='openrouter/free',
-                        label='Model name')
-                    
+                        label='temp_slider')
+                        
+                    with gr.Group():
+                        model_name_input = gr.Textbox(
+                            placeholder='Enter model name',
+                            value='openrouter/free',
+                            label='Enter Model name')
+                        
+                        @gr.render(inputs=model_name)
+                        def render_model_name(model_name):
+                            model_btn = gr.Button(
+                                model_name,
+                                size='sm',
+                                variant='secondary')
+                            model_btn
+                        
                     model_name_input.submit(
                         fn = lambda model_name:model_name,
                         inputs=[model_name_input],
