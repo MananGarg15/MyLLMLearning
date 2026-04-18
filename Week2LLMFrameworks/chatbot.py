@@ -25,6 +25,9 @@ def create_new_chat(chat_list):
 def load_chat(chat_num):
     return chat_num
 
+def reset_content():
+    return '',''
+
 def getFileContent(file_path):
     # For PDF
     if file_path.name.endswith('.pdf'):
@@ -97,13 +100,9 @@ def startApp():
                     wrapLlm,
                     inputs=[user_input, file_content,source,model_name,temperature,chat_no], 
                     outputs=[chat_history]
-                # ).then(
-                #     fn=update_chatbox, 
-                #     inputs=[model_name,chat_no], 
-                #     outputs=chat_history
                 ).then(
-                    fn = lambda rst='':rst, 
-                    outputs=[user_input] )
+                    fn = reset_content, 
+                    outputs=[file_content,user_input] )
 
                 user_input.submit(
                     wrapLlm,
@@ -114,8 +113,8 @@ def startApp():
                 #     inputs=[model_name,chat_no], 
                 #     outputs=chat_history
                 ).then(
-                    fn = lambda rst='':rst,
-                    outputs=[user_input])
+                    fn = reset_content,
+                    outputs=[file_content,user_input])
 
 
             with gr.Column(scale=1):
