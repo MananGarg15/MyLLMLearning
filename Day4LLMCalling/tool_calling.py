@@ -3,10 +3,10 @@ from Day4LLMCalling.tool_list import get_ticket_price,set_ticket_price
 
 
 def handle_tool_call(message):
-    final_response = []
+    responses = []
 
     for tool_call in message.tool_calls:
-        arguments:dict = json.loads(tool_call.function.arguments)
+        arguments = json.loads(tool_call.function.arguments)
         function = function_map[tool_call.function.name]
         price_response = function(**arguments)
         response = {
@@ -15,8 +15,8 @@ def handle_tool_call(message):
             'tool_call_id':tool_call.id
         }
 
-        final_response.append(response)
-    return final_response
+        responses.append(response)
+    return responses, arguments
 
 function_map = {
     "get_ticket_price":get_ticket_price,

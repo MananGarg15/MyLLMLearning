@@ -14,7 +14,7 @@ class Llms:
     ollama = OpenAI(base_url='http://localhost:11434/v1',api_key='')
 
              
-    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama', temperature=1, chat_no=0, tools = ''):
+    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama', temperature=1, chat_no=0, tools = '', return_tool_arguments=False):
 
         match source:
             case 'ollama':        
@@ -48,13 +48,15 @@ class Llms:
         
         response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools)
         
+        tool_arguments = []
+
         while response.choices[0].finish_reason == 'tool_calls':
             tool_request_message = response.choices[0].message
-            tool_data_response = handle_tool_call(tool_request_message)
+            tool_data_response,tool_argument = handle_tool_call(tool_request_message)
             message = mSeries.addToPromptList([tool_request_message],model=model,chat_no=chat_no)
             message = mSeries.addToPromptList(tool_data_response,model=model,chat_no=chat_no)
             response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools)
-
+            tool_arguments.append(tool_argument)
 
         if stream:
             display_handle = display(Markdown(''), display_id=True)
@@ -74,7 +76,9 @@ class Llms:
             
             if markdown: 
                 return Markdown(result)
-            return result    
+            if return_tool_arguments:
+                return result,tool_arguments
+            return result
 
     def callModelGenerator(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=True, source = 'ollama', temperature=1, chat_no=0):
 
