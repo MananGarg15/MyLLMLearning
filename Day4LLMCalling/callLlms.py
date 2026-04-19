@@ -3,6 +3,7 @@ from openai import OpenAI
 from IPython.display import Markdown,display, update_display
 import os
 from dotenv import load_dotenv
+from Day4LLMCalling.tool_calling import handle_tool_call
 load_dotenv(override=True)
 
 
@@ -13,7 +14,7 @@ class Llms:
     ollama = OpenAI(base_url='http://localhost:11434/v1',api_key='')
 
              
-    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama', temperature=1, chat_no=0):
+    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama', temperature=1, chat_no=0, tools = ''):
 
         match source:
             case 'ollama':        
@@ -42,8 +43,17 @@ class Llms:
             else:
                 mSeries.promptList[chat_no][model] = [system_message]
 
-
-        response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature) 
+        if tools:
+            stream=False
+        
+        response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools)
+        
+        while response.choices[0].finish_reason == 'tool_calls':
+            tool_request_message = response.choices[0].message
+            tool_data_response = handle_tool_call(tool_request_message)
+            message = mSeries.addToPromptList([tool_request_message],model=model,chat_no=chat_no)
+            message = mSeries.addToPromptList(tool_data_response,model=model,chat_no=chat_no)
+            response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools)
 
 
         if stream:
