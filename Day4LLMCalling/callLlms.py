@@ -9,12 +9,15 @@ load_dotenv(override=True)
 
 
 class Llms:
+    openai_api_key = os.getenv('OPENAI_API_KEY')
     gemini = OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/",api_key=os.getenv('GOOGLE_API_KEY'))
     openRouter = OpenAI(base_url="https://openrouter.ai/api/v1",api_key=os.getenv('OPENROUTER_API_KEY'))
     ollama = OpenAI(base_url='http://localhost:11434/v1',api_key='')
+    openai = OpenAI()
 
              
-    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama', temperature=1, chat_no=0, tools = '', return_tool_arguments=False):
+    def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama', temperature=1, chat_no=0, tools = '',
+     return_tool_arguments=False,max_tokens=640000):
 
         match source:
             case 'ollama':        
@@ -26,7 +29,12 @@ class Llms:
             case 'openRouter':
                 source = Llms.openRouter
                 if model =='gpt-oss:20b':
-                    model='openrouter/free'            
+                    model='openrouter/free'     
+            case 'openai':
+                source = Llms.openRouter
+                if model =='gpt-oss:20b':
+                    model='gpt-5.4-nano'  
+                max_tokens=4096
             case _:
                 print('please select a valid source')
                 return
@@ -46,7 +54,7 @@ class Llms:
         if tools:
             stream=False
         
-        response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools)
+        response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools,max_tokens=max_tokens)
         
         tool_arguments = []
 
@@ -71,6 +79,24 @@ class Llms:
         else:
             result = response.choices[0].message.content
 
+
+            print(f"Input tokens: {response.usage.prompt_tokens}")
+            print(f"Output tokens: {response.usage.completion_tokens}")
+            print(f"Total tokens: {response.usage.total_tokens}")
+            # Define your pricing (example rates per 1M tokens)
+            PRICES = {
+                "input_per_1m": 0.20,  # Example cost
+                "output_per_1m": 1.25  # Example cost
+            }
+
+            input_cost = (response.usage.prompt_tokens / 1_000_000) * PRICES["input_per_1m"]
+            output_cost = (response.usage.completion_tokens / 1_000_000) * PRICES["output_per_1m"]
+            total_cost_cents = (input_cost + output_cost) * 100
+
+            print(f"Total calculated cost: {total_cost_cents:.4f} cents")
+
+
+
             newMessage = [{'role':'assistant','content':result}]
             mSeries.addToPromptList(newMessage,model=model,chat_no=chat_no)
             
@@ -80,7 +106,7 @@ class Llms:
                 return result,tool_arguments
             return result
 
-    def callModelGenerator(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=True, source = 'ollama', temperature=1, chat_no=0):
+    def callModelGenerator(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=True, source = 'ollama', temperature=1, chat_no=0,max_tokens=640000):
 
         match source:
             case 'ollama':        
@@ -92,7 +118,12 @@ class Llms:
             case 'openRouter':
                 source = Llms.openRouter
                 if model =='gpt-oss:20b':
-                    model='openrouter/free'            
+                    model='openrouter/free'  
+            case 'openai':
+                source = Llms.openRouter
+                if model =='gpt-oss:20b':
+                    model='gpt-5.4-nano'  
+                max_tokens=4096          
             case _:
                 print('please select a valid source')
                 return
@@ -108,7 +139,7 @@ class Llms:
             else:
                 mSeries.promptList[chat_no][model] = [system_message]
 
-        response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature) 
+        response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,max_tokens=max_tokens) 
 
         rsp = ''
         for chunk in response:
