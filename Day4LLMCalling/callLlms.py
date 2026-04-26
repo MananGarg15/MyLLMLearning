@@ -13,7 +13,7 @@ class Llms:
     gemini = OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/",api_key=os.getenv('GOOGLE_API_KEY'))
     openRouter = OpenAI(base_url="https://openrouter.ai/api/v1",api_key=os.getenv('OPENROUTER_API_KEY'))
     ollama = OpenAI(base_url='http://localhost:11434/v1',api_key='')
-    openai = OpenAI()
+    openai = OpenAI(api_key=openai_api_key)
 
              
     def callModel(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=False, source = 'ollama', temperature=1, chat_no=0, tools = '',
@@ -63,7 +63,7 @@ class Llms:
             tool_data_response,tool_argument = handle_tool_call(tool_request_message)
             message = mSeries.addToPromptList([tool_request_message],model=model,chat_no=chat_no)
             message = mSeries.addToPromptList(tool_data_response,model=model,chat_no=chat_no)
-            response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools)
+            response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools, max_tokens=max_tokens)
             tool_arguments.append(tool_argument)
 
         if stream:
