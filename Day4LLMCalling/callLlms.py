@@ -63,7 +63,7 @@ class Llms:
         while response.choices[0].finish_reason == 'tool_calls':
             tool_request_message = response.choices[0].message
             tool_data_response,tool_argument, tool_response_obj = handle_tool_call(tool_request_message)
-            
+
             message = mSeries.addToPromptList([tool_request_message],model=model,chat_no=chat_no)
             message = mSeries.addToPromptList(tool_data_response,model=model,chat_no=chat_no)
             response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools, max_tokens=max_tokens)
@@ -83,20 +83,20 @@ class Llms:
             result = response.choices[0].message.content
 
 
-            print(f"Input tokens: {response.usage.prompt_tokens}")
-            print(f"Output tokens: {response.usage.completion_tokens}")
-            print(f"Total tokens: {response.usage.total_tokens}")
-            # Define your pricing (example rates per 1M tokens)
-            PRICES = {
-                "input_per_1m": 0.20,  # Example cost
-                "output_per_1m": 1.25  # Example cost
-            }
+            # print(f"Input tokens: {response.usage.prompt_tokens}")
+            # print(f"Output tokens: {response.usage.completion_tokens}")
+            # print(f"Total tokens: {response.usage.total_tokens}")
+            # # Define your pricing (example rates per 1M tokens)
+            # PRICES = {
+            #     "input_per_1m": 0.20,  # Example cost
+            #     "output_per_1m": 1.25  # Example cost
+            # }
 
-            input_cost = (response.usage.prompt_tokens / 1_000_000) * PRICES["input_per_1m"]
-            output_cost = (response.usage.completion_tokens / 1_000_000) * PRICES["output_per_1m"]
-            total_cost_cents = (input_cost + output_cost) * 100
+            # input_cost = (response.usage.prompt_tokens / 1_000_000) * PRICES["input_per_1m"]
+            # output_cost = (response.usage.completion_tokens / 1_000_000) * PRICES["output_per_1m"]
+            # total_cost_cents = (input_cost + output_cost) * 100
 
-            print(f"Total calculated cost: {total_cost_cents:.4f} cents")
+            # print(f"Total calculated cost: {total_cost_cents:.4f} cents")
 
 
 
