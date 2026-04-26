@@ -1,26 +1,36 @@
 import json
-from Day4LLMCalling.tool_list import get_ticket_price,set_ticket_price
+from Day4LLMCalling.tool_list import get_ticket_price,set_ticket_price, image_generation_function
 
 
 def handle_tool_call(message):
     responses = []
 
     for tool_call in message.tool_calls:
+        response_object = None
+        content = ''
         arguments = json.loads(tool_call.function.arguments)
         function = function_map[tool_call.function.name]
-        price_response = function(**arguments)
+        function_response = function(**arguments)
+        if hasattr(function_response, 'filename'):
+            response_object = function_response  
+            content = "Image generated successfully."
+        else:
+            content = str(function_response)
+
         response = {
             'role':'tool',
-            'content':price_response,
+            'content':content,
             'tool_call_id':tool_call.id
         }
 
         responses.append(response)
-    return responses, arguments
+    return responses, arguments, response_object
 
 function_map = {
     "get_ticket_price":get_ticket_price,
-    'set_ticket_price':set_ticket_price
+    'set_ticket_price':set_ticket_price,
+    'image_generation_function':image_generation_function
+    
 }
 
 price_function = {
@@ -53,7 +63,24 @@ price_function = {
     }
   }
 
-tools = [{'type':'function','function':price_function}]
+
+image_generation_function = {
+    "name": "image_generation_function",
+    "description": "Generates an image from a text prompt using an AI image model. Use this tool whenever the user asks to generate, create, draw, or produce an image.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "A descriptive prompt for the image to generate. Be detailed and specific — include subject, style, lighting, colors, and mood where relevant. Example: 'A futuristic cityscape at night with neon lights reflected in rain puddles, cinematic style'."
+            }
+        },
+        "required": ["text"]
+    }
+}
+
+tools = [{'type':'function','function':price_function},
+         {'type':'function','function':image_generation_function}]
 
 
 

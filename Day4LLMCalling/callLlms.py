@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from Day4LLMCalling.tool_calling import handle_tool_call
 load_dotenv(override=True)
+import PIL
 
 
 
@@ -57,10 +58,12 @@ class Llms:
         response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools,max_tokens=max_tokens)
         
         tool_arguments = []
+        tool_response_obj = None
 
         while response.choices[0].finish_reason == 'tool_calls':
             tool_request_message = response.choices[0].message
-            tool_data_response,tool_argument = handle_tool_call(tool_request_message)
+            tool_data_response,tool_argument, tool_response_obj = handle_tool_call(tool_request_message)
+            
             message = mSeries.addToPromptList([tool_request_message],model=model,chat_no=chat_no)
             message = mSeries.addToPromptList(tool_data_response,model=model,chat_no=chat_no)
             response = source.chat.completions.create(model=model,messages=messages, response_format={"type":response_format}, stream=stream, temperature = temperature,tools=tools, max_tokens=max_tokens)
@@ -103,7 +106,7 @@ class Llms:
             if markdown: 
                 return Markdown(result)
             if return_tool_arguments:
-                return result,tool_arguments
+                return result,tool_arguments, tool_response_obj
             return result
 
     def callModelGenerator(message,new=False,system_prompt = '', response_format='text', markdown=False, model='gpt-oss:20b', stream=True, source = 'ollama', temperature=1, chat_no=0,max_tokens=640000):

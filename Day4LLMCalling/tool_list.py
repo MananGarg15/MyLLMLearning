@@ -1,4 +1,9 @@
 import sqlite3 as sql
+import requests
+from PIL import Image
+from io import BytesIO
+import base64
+import os
 
 ticket_prices = {"london": "$799", "paris": "$899", "tokyo": "$1400", "berlin": "$499"}
 
@@ -80,3 +85,48 @@ def set_ticket_price(destination_city:str = '',price=0,action='set'):
     conn.commit()
     conn.close()
     return f'The result of your query is {result}'
+
+
+
+
+def image_generation_function(text):   
+    print(f"Generating image")
+
+    response = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={
+            "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": "openai/gpt-5-image-mini",
+            "messages": [{"role": "user", "content": text}],
+            "modalities": ["image", "text"],
+        },
+        timeout=120,
+    )
+
+    result = response.json()
+    message = result['choices'][0]["message"]
+    images = message.get("images", [])
+    if images:
+        img_url = images[0]["image_url"]["url"]     
+        image_base64 = img_url.split(",")[1]
+        image_data = base64.b64decode(image_base64)
+        print("Image generated!")
+        image_path = "toolImage.png"
+        with open(image_path, 'wb') as f:
+            f.write(image_data)
+        return Image.open(image_path)
+    else:
+        print("No image returned")
+        return None
+
+
+
+def load_image(image_path:str):
+    if not image_path.endswith(('.png','.jpeg','.jpg')):
+        return f'Image path invalid'
+    
+    img = Image.open(image_path)
+    return img
